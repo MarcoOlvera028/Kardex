@@ -690,48 +690,49 @@ def mostrar_inscripcion(contenido, ciclo_activo):
 
 
 
-         # -----------------------------------
+        # -----------------------------------
         # INSERTAR MATERIAS EN ESTADO ACADEMICO
         # -----------------------------------
-
-        # 1️⃣ Obtener ID real del grupo
-        cur.execute("""
-            SELECT id FROM Grados WHERE nombre = ?
-        """, (grupo,))
-        grupo_row = cur.fetchone()
-
-        if grupo_row:
-            grupo_id = grupo_row[0]
-
-            # 2️⃣ Obtener materias que pertenecen a ese grupo
+        if grupo:
+            # 1️⃣ Obtener ID real del grupo
+            grupo = grupo.split("/")[0]
             cur.execute("""
-                SELECT id FROM Materias
-                WHERE grupo_id = ?
-            """, (grupo_id,))
-            materias = cur.fetchall()
+                SELECT id FROM Grados WHERE nombre = ?
+            """, (grupo,))
+            grupo_row = cur.fetchone()
 
-            # 3️⃣ Insertar cada materia en EstadoAcademico
-            for materia in materias:
-                materia_id = materia[0]
+            if grupo_row:
+                grupo_id = grupo_row[0]
 
+                # 2️⃣ Obtener materias que pertenecen a ese grupo
                 cur.execute("""
-                    INSERT INTO EstadoAcademico (
-                        alumno_id,
+                    SELECT id FROM Materias
+                    WHERE grupo_id = ?
+                """, (grupo_id,))
+                materias = cur.fetchall()
+
+                # 3️⃣ Insertar cada materia en EstadoAcademico
+                for materia in materias:
+                    materia_id = materia[0]
+
+                    cur.execute("""
+                        INSERT INTO EstadoAcademico (
+                            alumno_id,
+                            materia_id,
+                            ciclo_id
+                        )
+                        VALUES (?, ?, ?)
+                    """, (
+                        id_nuevo,
                         materia_id,
-                        ciclo_id
-                    )
-                    VALUES (?, ?, ?)
-                """, (
-                    id_nuevo,
-                    materia_id,
-                    ciclo_activo["id"]
-                ))
-        
+                        ciclo_activo["id"]
+                    ))
+            messagebox.showinfo("Éxito", "Alumno registrado correctamente.")
+        else:
+            messagebox.showinfo("Éxito", "Alumno registrado correctamente.")
+
         conn.commit()
         conn.close()
-
-        messagebox.showinfo("Éxito", "Alumno registrado correctamente.")
-
         # mostrar ficha del alumno recién creado
         mostrar_ficha_alumno(id_nuevo, contenido, ciclo_activo)
 

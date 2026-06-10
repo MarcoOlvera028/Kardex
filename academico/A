@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import ttk
 
@@ -166,18 +167,17 @@ def cargar_materias(tree):
             g.nombre,
             m.clave,
             m.nombre,
-            m.orden,
             COALESCE(e.nombre,'') AS especialidad
         FROM Materias m
         LEFT JOIN Grados g ON g.id = m.grupo_id
         LEFT JOIN Especialidades e ON e.id = m.especialidad_id
-        ORDER BY g.orden, e.nombre, m.orden
+        ORDER BY g.orden, e.nombre, m.nombre
     """)
 
     grados = {}
     especialidades = {}
 
-    for materia_id, grado, clave, nombre, orden, especialidad in filas:
+    for materia_id, grado, clave, nombre, especialidad in filas:
 
         # crear nodo grado
         if grado not in grados:
@@ -235,7 +235,7 @@ def cargar_materias(tree):
 def ventana_materia(parent, tree, datos=None):
     top = tk.Toplevel(parent)
     top.title("Modificar Materia" if datos else "Agregar Materia")
-    top.geometry("350x390")
+    top.geometry("350x330")
     top.transient(parent.winfo_toplevel())
     top.grab_set()
     top.resizable(False, False)
@@ -250,7 +250,6 @@ def ventana_materia(parent, tree, datos=None):
     nombre_var = tk.StringVar()
     grado_var = tk.StringVar()
     especialidad_var = tk.StringVar()
-    orden_var = tk.StringVar()
 
     # =========================
     # CLAVE
@@ -311,13 +310,6 @@ def ventana_materia(parent, tree, datos=None):
     cb_especialidad.set("Ninguna")
 
     # =========================
-    # ORDEN
-    # =========================
-    tk.Label(cont, text="orden:").pack(anchor="w")
-    entry_orden = tk.Entry(cont, textvariable=orden_var)
-    entry_orden.pack(fill="x", pady=5)
-
-    # =========================
     # CARGAR DATOS SI ES MODIFICAR
     # =========================
     if datos:
@@ -325,7 +317,6 @@ def ventana_materia(parent, tree, datos=None):
         nombre_var.set(datos["nombre"])
         grado_var.set(datos["grado"])
         especialidad_var.set(datos["especialidad"] or "Ninguna")
-        orden_var.set(datos["orden"])
 
     # =========================
     # GUARDAR
@@ -335,10 +326,9 @@ def ventana_materia(parent, tree, datos=None):
         nombre = nombre_var.get().strip()
         grado_nombre = grado_var.get()
         especialidad_nombre = especialidad_var.get()
-        orden = orden_var.get().strip()
 
-        if not clave or not nombre or not grado_nombre or not orden:
-            show_error(top, "Error", "Clave, nombre, grado y orden son obligatorios.")
+        if not clave or not nombre or not grado_nombre:
+            show_error(top, "Error", "Clave, nombre y grado son obligatorios.")
             return
 
         grado_id = grados_dict.get(grado_nombre)
@@ -350,14 +340,14 @@ def ventana_materia(parent, tree, datos=None):
         if datos:  # MODIFICAR
             ejecutar_consulta("""
                 UPDATE Materias
-                    SET clave=?, nombre=?, grupo_id=?, especialidad_id=?, orden=?
+                    SET clave=?, nombre=?, grupo_id=?, especialidad_id=?
                 WHERE id=?
-            """, (clave, nombre, grado_id, especialidad_id, datos["id"], orden))
+            """, (clave, nombre, grado_id, especialidad_id, datos["id"]))
         else:  # AGREGAR
             ejecutar_consulta("""
-                INSERT INTO Materias (clave, nombre, grupo_id, especialidad_id, orden)
-                VALUES (?, ?, ?, ?, ?)
-            """, (clave, nombre, grado_id, especialidad_id, orden))
+                INSERT INTO Materias (clave, nombre, grupo_id, especialidad_id)
+                VALUES (?, ?, ?, ?)
+            """, (clave, nombre, grado_id, especialidad_id))
 
         cargar_materias(tree)
         top.destroy()
@@ -400,8 +390,7 @@ def modificar_materia(parent, tree):
             m.clave,
             m.nombre,
             g.nombre,
-            e.nombre,
-            m.orden
+            e.nombre
         FROM Materias m
         LEFT JOIN Grados g ON g.id = m.grupo_id
         LEFT JOIN Especialidades e ON e.id = m.especialidad_id
@@ -417,8 +406,7 @@ def modificar_materia(parent, tree):
         "clave": fila[0][1],
         "nombre": fila[0][2],
         "grado": fila[0][3],
-        "especialidad": fila[0][4],
-        "orden": fila[0][5]
+        "especialidad": fila[0][4]
     }
 
     ventana_materia(parent, tree, datos)
@@ -452,5 +440,6 @@ def borrar_materia(parent, tree):
     )
 
     cargar_materias(tree)
+
 
 

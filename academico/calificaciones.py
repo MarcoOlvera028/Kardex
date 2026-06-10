@@ -110,11 +110,11 @@ def mostrar_calificaciones(contenido, ciclo_activo):
 
             else:
                 cur.execute("""
-                    SELECT id, nombre
+                    SELECT id, nombre, orden
                     FROM Materias
                     WHERE grupo_id = ?
                     AND nombre LIKE ?
-                    ORDER BY nombre
+                    ORDER BY orden
                 """, (grado_id, f"%{filtro}%"))
 
                 materias = [(m[0], m[1], None) for m in cur.fetchall()]
@@ -344,26 +344,6 @@ def ventana_calificaciones_materia(parent, materia_id, grado, grupo, ciclo_id):
         p3_var = tk.StringVar(value="" if p3 is None else str(p3))
         final_var = tk.StringVar(value="" if final is None else str(final))
 
-        def calcular_final(*args, p1v=p1_var, p2v=p2_var, p3v=p3_var, finalv=final_var):
-            try:
-                n1 = float(p1v.get())
-                n2 = float(p2v.get())
-                n3 = float(p3v.get())
-                promedio = round((n1 + n2 + n3) / 3, 1)
-
-                if promedio < 5:
-                    promedio = 5
-                if promedio > 5.5 and promedio < 6:
-                    promedio = 6
-                
-                finalv.set(str(promedio))
-            except:
-                finalv.set("")
-
-        p1_var.trace_add("write", calcular_final)
-        p2_var.trace_add("write", calcular_final)
-        p3_var.trace_add("write", calcular_final)
-
         tk.Label(bloque, text="Primer Parcial").grid(row=1, column=0)
         tk.Entry(bloque, width=6, textvariable=p1_var).grid(row=1, column=1)
 
@@ -374,7 +354,7 @@ def ventana_calificaciones_materia(parent, materia_id, grado, grupo, ciclo_id):
         tk.Entry(bloque, width=6, textvariable=p3_var).grid(row=1, column=5)
 
         tk.Label(bloque, text="Final").grid(row=1, column=6)
-        tk.Entry(bloque, width=6, textvariable=final_var, state="readonly").grid(row=1, column=7)
+        tk.Entry(bloque, width=6, textvariable=final_var).grid(row=1, column=7)
 
         entradas[ea_id] = (p1_var, p2_var, p3_var, final_var)
 
