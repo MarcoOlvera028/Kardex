@@ -99,11 +99,11 @@ def mostrar_calificaciones(contenido, ciclo_activo):
 
             if grado_nombre in ("Quinto", "Sexto"):
                 cur.execute("""
-                    SELECT id, nombre, especialidad_id
+                    SELECT id, nombre, especialidad_id, orden
                     FROM Materias
                     WHERE grupo_id = ?
                     AND nombre LIKE ?
-                    ORDER BY nombre
+                    ORDER BY orden
                 """, (grado_id, f"%{filtro}%"))
 
                 materias = cur.fetchall()
@@ -117,7 +117,7 @@ def mostrar_calificaciones(contenido, ciclo_activo):
                     ORDER BY orden
                 """, (grado_id, f"%{filtro}%"))
 
-                materias = [(m[0], m[1], None) for m in cur.fetchall()]
+                materias = [(m[0], m[1], m[2], None) for m in cur.fetchall()]
 
 
 
@@ -137,7 +137,7 @@ def mostrar_calificaciones(contenido, ciclo_activo):
                 )
 
                 # Insertar todas las materias del grado en cada grupo
-                for materia_id, materia_nombre, especialidad_id in materias:
+                for materia_id, materia_nombre, especialidad_id, orden in materias:
                     if grado_nombre in ("Quinto", "Sexto"):
 
                         esp_grupo = mapa_especialidad.get(grupo_nombre)
@@ -275,9 +275,9 @@ def ventana_calificaciones_materia(parent, materia_id, grado, grupo, ciclo_id):
     alumnos = obtener_todos("""
         SELECT 
             ea.id,
-            e.nombre,
             e.apellido_paterno,
             e.apellido_materno,
+            e.nombre,
             ea.parcial1,
             ea.parcial2,
             ea.parcial3,
@@ -287,7 +287,7 @@ def ventana_calificaciones_materia(parent, materia_id, grado, grupo, ciclo_id):
         JOIN DatosEscolares de ON de.estudiante_id = ea.alumno_id
         WHERE ea.materia_id = ?
         AND ea.ciclo_id = ? AND de.ciclo_id=? AND de.grupo = ?
-        ORDER BY e.nombre
+        ORDER BY e.apellido_paterno
     """, (materia_id, ciclo_id, ciclo_id, grupo_completo))
 
 
@@ -330,19 +330,44 @@ def ventana_calificaciones_materia(parent, materia_id, grado, grupo, ciclo_id):
     # =========================
     # BLOQUES POR ALUMNO
     # =========================
-    for ea_id, nombre, ap, am, p1, p2, p3, final in alumnos:
+    def actualizar_final(p1_var, p2_var, p3_var, final_var):
+        try:
+            p1 = float(p1_var.get())
+            p2 = float(p2_var.get())
+            p3 = float(p3_var.get())
 
+            promedio = round((p1 + p2 + p3) / 3, 1)
+            final_var.set(str(promedio))
+
+        except ValueError:
+            # Si alguna calificación no es numérica, no calcular
+            pass
+    
+    for ea_id, ap, am, nombre, p1, p2, p3, final in alumnos:
         bloque = tk.Frame(frame, bg="white", bd=1, relief="solid", padx=10, pady=10)
         bloque.pack(fill="x", pady=5)
 
-        nombre_completo = f"{nombre} {ap} {am}"
+        nombre_completo = f"{ap} {am} {nombre}"
 
-        tk.Label(bloque, text=nombre_completo, font=("Segoe UI", 11, "bold"), bg="white").grid(row=0, column=0, columnspan=8, sticky="w", pady=(0, 8))
+        tk.Label(
+            bloque,
+            text=nombre_completo,
+            font=("Segoe UI", 11, "bold"),
+            bg="white"
+        ).grid(row=0, column=0, columnspan=8, sticky="w", pady=(0, 8))
 
         p1_var = tk.StringVar(value="" if p1 is None else str(p1))
         p2_var = tk.StringVar(value="" if p2 is None else str(p2))
         p3_var = tk.StringVar(value="" if p3 is None else str(p3))
         final_var = tk.StringVar(value="" if final is None else str(final))
+
+        # Calcular automáticamente cuando cambie un parcial
+        for var in (p1_var, p2_var, p3_var):
+            var.trace_add(
+                "write",
+                lambda *args, p1v=p1_var, p2v=p2_var, p3v=p3_var, fv=final_var:
+                    actualizar_final(p1v, p2v, p3v, fv)
+            )
 
         tk.Label(bloque, text="Primer Parcial").grid(row=1, column=0)
         tk.Entry(bloque, width=6, textvariable=p1_var).grid(row=1, column=1)

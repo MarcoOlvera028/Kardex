@@ -54,7 +54,7 @@ def mostrar_alumnos(contenido, ciclo_activo):
     table_frame = tk.Frame(contenido, bg="white")
     table_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    columnas = ("id", "nombre", "apellido_paterno", "apellido_materno",
+    columnas = ("id", "apellido_paterno", "apellido_materno", "nombre", 
                 "grupo", "especialidad")
 
     tabla = ttk.Treeview(
@@ -65,17 +65,17 @@ def mostrar_alumnos(contenido, ciclo_activo):
 
     # Encabezados
     tabla.heading("id", text="Matrícula")
-    tabla.heading("nombre", text="Nombre")
     tabla.heading("apellido_paterno", text="Apellido Paterno")
     tabla.heading("apellido_materno", text="Apellido Materno")
+    tabla.heading("nombre", text="Nombre")
     tabla.heading("grupo", text="Grupo")
     tabla.heading("especialidad", text="Especialidad")
 
     # Tamaños iniciales
     tabla.column("id", width=100, anchor="center")
-    tabla.column("nombre", width=160)
     tabla.column("apellido_paterno", width=140)
     tabla.column("apellido_materno", width=140)
+    tabla.column("nombre", width=160)
     tabla.column("grupo", width=100)
     tabla.column("especialidad", width=120)
 
@@ -113,9 +113,9 @@ def mostrar_alumnos(contenido, ciclo_activo):
             like = f"%{filtro}%"
             cur.execute("""
                 SELECT E.matricula,
-                    E.nombre,
                     E.apellido_paterno,
                     E.apellido_materno,
+                    E.nombre,
                     D.grupo,
                     D.especialidad,
                     E.id
@@ -126,14 +126,14 @@ def mostrar_alumnos(contenido, ciclo_activo):
                 WHERE E.nombre LIKE ?
                 OR E.apellido_paterno LIKE ?
                 OR E.apellido_materno LIKE ?
-                ORDER BY E.id
+                ORDER BY E.apellido_paterno
             """, (ciclo_activo["id"], like, like, like))
         else:
             cur.execute("""
                 SELECT E.matricula,
-                    E.nombre,
                     E.apellido_paterno,
                     E.apellido_materno,
+                    E.nombre,
                     D.grupo,
                     D.especialidad,
                     E.id
@@ -141,7 +141,7 @@ def mostrar_alumnos(contenido, ciclo_activo):
                 INNER JOIN DatosEscolares D
                         ON D.estudiante_id = E.id
                     AND D.ciclo_id = ?
-                ORDER BY E.id
+                ORDER BY E.apellido_paterno
             """, (ciclo_activo["id"],))
 
 
@@ -257,20 +257,20 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
     table_frame = tk.Frame(contenido, bg="white")
     table_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    columnas = ("id", "nombre", "apellido_paterno", "apellido_materno", "grupo", "especialidad")
+    columnas = ("id", "apellido_paterno", "apellido_materno", "nombre", "grupo", "especialidad")
     tabla = ttk.Treeview(table_frame, columns=columnas, show="headings")
     tabla.heading("id", text="Matrícula")
-    tabla.heading("nombre", text="Nombre")
     tabla.heading("apellido_paterno", text="Apellido Paterno")
     tabla.heading("apellido_materno", text="Apellido Materno")
+    tabla.heading("nombre", text="Nombre")
     tabla.heading("grupo", text="Grupo")
     tabla.heading("especialidad", text="Especialidad")
 
     # columnas tamaño inicial
     tabla.column("id", width=100, anchor="center")
-    tabla.column("nombre", width=160)
     tabla.column("apellido_paterno", width=140)
     tabla.column("apellido_materno", width=140)
+    tabla.column("nombre", width=160)
     tabla.column("grupo", width=100)
     tabla.column("especialidad", width=120)
 
@@ -312,9 +312,9 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                 cur.execute("""
                     SELECT
                         e.matricula,
-                        e.nombre,
                         e.apellido_paterno,
                         e.apellido_materno,
+                        e.nombre,
                         d.grupo,
                         d.especialidad,
                         e.id
@@ -325,15 +325,15 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                         e.nombre LIKE ?
                         OR e.apellido_paterno LIKE ?
                         OR e.apellido_materno LIKE ?
-                    ORDER BY e.id
+                    ORDER BY e.apellido_paterno
                 """, (like, like, like))
             else:
                 cur.execute("""
                     SELECT
                         e.matricula,
-                        e.nombre,
                         e.apellido_paterno,
                         e.apellido_materno,
+                        e.nombre,
                         d.grupo,
                         d.especialidad,
                         e.id
@@ -346,7 +346,7 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                         WHERE d2.estudiante_id = e.id
                         AND d2.ciclo_id = ?
                     )
-                    ORDER BY e.id
+                    ORDER BY e.apellido_paterno
                 """, (
                     ciclo_activo["id"],
                 ))
@@ -358,9 +358,9 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                 cur.execute("""
                     SELECT
                         e.matricula,
-                        e.nombre,
                         e.apellido_paterno,
                         e.apellido_materno,
+                        e.nombre,
                         d.grupo,
                         d.especialidad,
                         e.id
@@ -379,7 +379,7 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                         OR e.apellido_paterno LIKE ?
                         OR e.apellido_materno LIKE ?
                     )
-                    ORDER BY e.id
+                    ORDER BY e.apellido_paterno
                 """, (
                     ciclo_origen["id"],
                     ciclo_activo["id"],
@@ -389,9 +389,9 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                 cur.execute("""
                     SELECT
                         e.matricula,
-                        e.nombre,
                         e.apellido_paterno,
                         e.apellido_materno,
+                        e.nombre,
                         d.grupo,
                         d.especialidad,
                         e.id
@@ -405,7 +405,7 @@ def mostrar_reinscripciones(contenido, ciclo_activo):
                         WHERE d2.estudiante_id = e.id
                         AND d2.ciclo_id = ?
                     )
-                    ORDER BY e.id
+                    ORDER BY e.apellido_paterno
                 """, (
                     ciclo_origen["id"],
                     ciclo_activo["id"]

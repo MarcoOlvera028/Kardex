@@ -352,7 +352,7 @@ def ventana_materia(parent, tree, datos=None):
                 UPDATE Materias
                     SET clave=?, nombre=?, grupo_id=?, especialidad_id=?, orden=?
                 WHERE id=?
-            """, (clave, nombre, grado_id, especialidad_id, datos["id"], orden))
+            """, (clave, nombre, grado_id, especialidad_id, orden, datos["id"]))
         else:  # AGREGAR
             ejecutar_consulta("""
                 INSERT INTO Materias (clave, nombre, grupo_id, especialidad_id, orden)

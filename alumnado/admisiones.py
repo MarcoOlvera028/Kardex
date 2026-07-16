@@ -733,8 +733,8 @@ def mostrar_inscripcion(contenido, ciclo_activo):
 
         conn.commit()
         conn.close()
-        # mostrar ficha del alumno recién creado
-        mostrar_ficha_alumno(id_nuevo, contenido, ciclo_activo)
+        # mostrar inscripción para capturar más alumnos
+        mostrar_inscripcion(contenido, ciclo_activo)
 
     btn_guardar = tk.Button(actions, text="Guardar", bg="#4caf50",
                              fg="white", padx=16, pady=6, command=guardar)

@@ -145,11 +145,12 @@ def cargar_materias_agrupadas(tree):
             m.id,
             m.clave,
             m.nombre,
+            m.orden,
             COALESCE(e.nombre, '')
         FROM Materias m
         LEFT JOIN Grados g ON g.id = m.grupo_id
         LEFT JOIN Especialidades e ON e.id = m.especialidad_id
-        ORDER BY g.id, m.nombre
+        ORDER BY g.id, m.especialidad_id, m.orden
     """)
 
     grupos = {}
@@ -160,7 +161,7 @@ def cargar_materias_agrupadas(tree):
         materia_id = fila[2]
         clave = fila[3]
         nombre = fila[4]
-        especialidad = fila[5]
+        especialidad = fila[6]
 
         # Crear nodo padre si no existe
         if grado_id not in grupos:
