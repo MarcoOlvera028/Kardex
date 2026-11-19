@@ -337,6 +337,15 @@ def ventana_calificaciones_materia(parent, materia_id, grado, grupo, ciclo_id):
             p3 = float(p3_var.get())
 
             promedio = round((p1 + p2 + p3) / 3, 1)
+
+            # Si es menor a 5, se convierte en 5
+            if promedio < 5:
+                promedio = 5
+
+            # Si está entre 5.5 y 5.9, se convierte en 6
+            elif 5.5 <= promedio < 6:
+                promedio = 6
+
             final_var.set(str(promedio))
 
         except ValueError:
